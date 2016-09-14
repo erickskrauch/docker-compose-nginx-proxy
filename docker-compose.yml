@@ -8,9 +8,23 @@ services:
             - /var/run/docker.sock:/tmp/docker.sock:ro
             - ./certs:/etc/nginx/certs:rw
             - ./htpasswd:/etc/nginx/htpasswd
+            - /etc/nginx/vhost.d
+            - /usr/share/nginx/html
         ports:
             - "80:80"
             - "443:443"
+        networks:
+            - nginx-proxy
+
+    letsencrypt-nginx-proxy-companion:
+        image: jrcs/letsencrypt-nginx-proxy-companion
+        container_name: letsencrypt-nginx-proxy-companion
+        restart: always
+        volumes_from:
+            - nginx-proxy
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - ./certs:/etc/nginx/certs:rw
         networks:
             - nginx-proxy
 
