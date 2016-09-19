@@ -8,6 +8,7 @@ services:
             - /var/run/docker.sock:/tmp/docker.sock:ro
             - ./certs:/etc/nginx/certs:rw
             - ./htpasswd:/etc/nginx/htpasswd
+            - ./vhost.d:/etc/nginx/vhost.d
             - /etc/nginx/vhost.d
             - /usr/share/nginx/html
         ports:
