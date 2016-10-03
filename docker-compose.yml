@@ -1,19 +1,33 @@
 version: '2'
 services:
-    nginx-proxy:
-        image: jwilder/nginx-proxy
-        container_name: nginx-proxy
+    nginx:
+        image: nginx:1.11-alpine
+        container_name: nginx
         restart: always
+        ports:
+            - "80:80"
+            - "443:443"
         volumes:
-            - /var/run/docker.sock:/tmp/docker.sock:ro
+            - /etc/nginx/conf.d
             - ./certs:/etc/nginx/certs:rw
             - ./htpasswd:/etc/nginx/htpasswd
             - ./vhost.d:/etc/nginx/vhost.d
             - /etc/nginx/vhost.d
             - /usr/share/nginx/html
-        ports:
-            - "80:80"
-            - "443:443"
+        networks:
+            - default
+            - nginx-proxy
+
+    dockergen:
+        image: jwilder/docker-gen
+        container_name: docker-gen
+        restart: always
+        command: -notify-sighup nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+        volumes_from:
+            - nginx
+        volumes:
+            - /var/run/docker.sock:/tmp/docker.sock:ro
+            - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
         networks:
             - nginx-proxy
 
@@ -22,7 +36,7 @@ services:
         container_name: letsencrypt-nginx-proxy-companion
         restart: always
         volumes_from:
-            - nginx-proxy
+            - nginx
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock:ro
             - ./certs:/etc/nginx/certs:rw
