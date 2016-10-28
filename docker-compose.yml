@@ -1,7 +1,7 @@
 version: '2'
 services:
     nginx:
-        image: nginx:1.11-alpine
+        image: fholzer/nginx-brotli:v1.10.2
         container_name: nginx
         restart: always
         ports:

@@ -4,3 +4,4 @@
 # Add here all files, that will be included in repository by default
 
 !gzip.conf
+!brotli.conf
