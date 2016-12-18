@@ -32,7 +32,9 @@ services:
             - nginx-proxy
 
     letsencrypt-nginx-proxy-companion:
-        image: jrcs/letsencrypt-nginx-proxy-companion
+        # original image was jrcs/letsencrypt-nginx-proxy-companion
+        # but we use fork because it fixes changed letencrypt API
+        image: alastaircoote/docker-letsencrypt-nginx-proxy-companion
         container_name: letsencrypt-nginx-proxy-companion
         restart: always
         volumes_from:
