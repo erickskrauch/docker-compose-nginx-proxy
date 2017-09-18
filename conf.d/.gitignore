@@ -3,5 +3,6 @@
 
 # Add here all files, that will be included in repository by default
 
+!nginx.conf
 !gzip.conf
 !brotli.conf
