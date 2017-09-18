@@ -1,137 +1,157 @@
-# Vibrobox Docker Nginx Proxy
+# Nginx Proxy docker-compose config
 
-Данный репозиторий предназначен для установки на сервера, которые должны включать в себя
-множество сервисов. Посколько все они не могут занять 80 порт, а вручную вести настройку
-nginx хостов слишком утомительно, и был создан этот репозиторий.
+> This project was developed as part of my work with [VibroBox](https://github.com/vibrobox).
 
-Пригодно для использования на dev машинах.
+If you are looking for a ready-made solution for combining [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy)
+with `nginx`, which supports `brotli` compression module and automatically management of Let's Encrypt
+certificates, so you are in the right place. In this repository, you can find the ready-made 
+`docker-compose` configuration, which combines the following containers:
 
-## Установка на сервер
+* [jwilder/docker-gen](https://github.com/jwilder/docker-gen)
 
-_Стоит понимать, что настройка выполняется один раз и работает в рамках всего сервера._
+  File generator that renders templates using Docker container meta-data.
 
-Сперва нужно создать сеть (network):
+* [fholzer/nginx-brotli](https://github.com/fholzer/docker-nginx-brotli)
+
+  Nginx image with an `brotli` compression module.
+
+* [jrcs/letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion)
+
+  Companion container for the docker-gen that allows the creation/renewal of Let's Encrypt
+  certificates automatically.
+
+Successfully tested in both production and local dev environments.
+
+## Installing
+
+_It is worthwhile to understand that the configuration is performed once and works within the whole server._
+
+At first, you should create a network:
 
 ```sh
 docker network create nginx-proxy
 ```
 
-Затем клонируем этот репозиторий в любое удобное место и переходим в его папку:
+Then you should clone this repository in any convenient place and go to its folder:
 
 ```sh
-git clone git@github.com:VibroBox/nginx-proxy.git
+git clone git@github.com:erickskrauch/docker-compose-nginx-proxy.git nginx-proxy
 cd nginx-proxy
 ```
 
-После просто поднимаем контейнеры:
+After just run the containers:
 
 ```sh
 docker-compose up -d
 ```
 
-На этом настройка звершена. Контейнеры скачаются\построятся и запустятся. Если сервер будет
-перезагружен, то контейнеры автоматически запустятся вместе с системой.
+At this stage the setting is completed. The images will be downloaded and containers will be launched.
+In the case that the server restarting, the containers will automatically start with the Docker Engine.
 
-## Конфигурация проектов для взаимодействия
+## Configuring projects
 
-* [Документация по nginx-proxy](https://github.com/jwilder/nginx-proxy#usage).
+> The information below is largely identical to the individual manuals for using these images
+  and can be studied in more details in the documentation for the respective repositories.
 
-nginx-proxy автоматически подхватывает лишь те контейнеры, у которых задана environment
-variable `VIRTUAL_HOST`. Если этого не сделать, то nginx-proxy не сгенерирует конфигурации
-и ничего не будет работать. Кроме того, контейнер должен экспозить (expose) хотя бы один
-порт (nginx и apache автоматически экспозят 80 и 443 порты).
+* [nginx-proxy guide](https://github.com/jwilder/nginx-proxy#usage).
 
-Кроме того, необходимо обеспечить работу всех контейнеров, что должны выходить во внешнюю
-сеть (интернет) внутри одной внутренней сети. Командами выше мы создали сеть `nginx-proxy`.
-Следовательно, те контейнеры, что должны проксироваться, также должны находиться в этой
-сети.
+docker-gen automatically picks up only those containers that have the environment variable `VIRTUAL_HOST`.
+If you don't do this, docker-gen will not generate the configuration and nothing will work.
+In addition, the container must expose at least one port (nginx and apache official images expose
+80 and 443 ports by default).
 
-Ниже приведён пример конфигурации docker-compose.yml для проекта, которых хочет быть
-проксирован под именем `example.com`:
+In addition, you need to make sure that the container that should be proxied is available
+in the network `nginx-proxy`, which we have created a bit earlier.
+
+Below there is an example of the `docker-compose.yml` configuration for the project that should be proxied
+under the name `example.com`:
 
 ```yml
 version: '2'
 services:
-    web:
-        from: nginx
-        environment:
-            - VIRTUAL_HOST=example.com
-        networks:
-            - default
-            - nginx-proxy
+  web:
+    from: nginx
+    environment:
+      - VIRTUAL_HOST=example.com
+    networks:
+      - nginx-proxy
 
-# Этим самым мы связываем внутреннюю сеть контейнера с глобальной, которую мы создали ранее
+# This is how we connect the internal network of the container with the global one, which we created earlier
 networks:
-    nginx-proxy:
-        external:
-            name: nginx-proxy
+  nginx-proxy:
+    external:
+      name: nginx-proxy
 ```
 
-## SSL сертификаты
+## SSL certificates
 
-* [Документация по nginx-proxy (SSL support)](https://github.com/jwilder/nginx-proxy#ssl-support).
+* [nginx-proxy guide (SSL support)](https://github.com/jwilder/nginx-proxy#ssl-support).
 
-В compose файле этого репозитория уже прописаны необходимые volume. Следуя инструкции
-по ссылке выше, сертификаты необходимо размещать в папке `certs`.
+The required volumes have been already written in the compose file of this repository.
+Following the instructions on the link above, certificates must be placed in the folder `certs`.
 
 #### Let's Encrypt
 
-* [Документация по letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion).
+* [letsencrypt-nginx-proxy-companion guide](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion).
 
-Также возможна автоматическая выписка и дальнейшее автообновление сертификатов
-Let's Encrypt. Чтобы включить эту функцию, необходимо в environment параметрах
-контейнера наряду с `VIRTUAL_HOST` указать два дополнительных:
+It is also possible to automatically create and further auto-update Let's Encrypt certificates.
+To enable this function, it is necessary to specify two additional parameters in the environment
+variables of the container along with `VIRTUAL_HOST`:
 
-* `LETSENCRYPT_HOST` - задаёт имя хоста, на которое выписывается сертификат.
-  Должен совпадать с `VIRTUAL_HOST` и, по сути, является просто триггером к тому,
-  чтобы контейнер-компаньон сгенерировал сертификат.
+* `LETSENCRYPT_HOST` - specifies the name of the host to which the certificate is issued.
+  In most cases it should be equal to `VIRTUAL_HOST` value.
  
-* `LETSENCRYPT_EMAIL` - задаёт E-mail, к которому будет привязан сертификат.
-  Никакой проверки не производится, можно писать что угодно, но стоит помнить о тому,
-  что на этот E-mail будут приходить уведомления от Let's Encrypt в случае чего.
+* `LETSENCRYPT_EMAIL` - specifies the E-mail to which the certificate will be attached.
+  There is no verification, you can write everything, but remember that this E-mail will
+  receive notifications from Let's Encrypt in some important cases.
 
-Сертификаты генерируются в течение пары минут. Если этого так и не произошло, то можно
-просмотреть логи командой:
+Certificates are generated within a couple of minutes. If this did not happen,
+you can view the logs with the command:
 
 ```sh
+# Execute in the folder where this docker-compose was installed
 docker-compose logs -f --tail 30 letsencrypt-nginx-proxy-companion
-# Выход совершается комбинацией клавиш Ctrl+C
 ```
 
-Обращу также внимание на то, что сертификаты будут успешно выписаны только в том
-случае, если сервер реально доступен извне по указанному имени хоста. Выписать таким
-образом сертификат на .local или иную другую несуществующую и недоступную доменную
-зону/домен не выйдет.
+I will also pay attention to the fact that certificates will be successfully issued only
+if the server is actually accessible from the Internet by the specified host name.
+You will not be able to write out a certificate for .local or any other non-existent
+and inaccessible domain zone/domain.
+
+To generate self-signed certificates for local development, it is convenient to use
+[this service](http://www.selfsignedcertificate.com/). The file `domain.key` should be put
+on the path `certs/domain.key`, and the file `domain.cert` as `certs/domain.crt`
+(without `e` in the extension).
 
 ## Basic Authentication
 
-* [Документация по nginx-proxy (Basic Authentication)](https://github.com/jwilder/nginx-proxy#basic-authentication-support).
+* [nginx-proxy guide (Basic Authentication)](https://github.com/jwilder/nginx-proxy#basic-authentication-support).
 
-* [Пример работы с утилитой htpasswd](http://www.cyberciti.biz/faq/create-update-user-authentication-files/).
+* [An example of work with utility htpasswd](http://www.cyberciti.biz/faq/create-update-user-authentication-files/).
 
-В compose файле этого репозитория уже прописаны необходимые volume. Следуя инструкции
-по ссылке выше, файлы с логинами и паролями необходимо размещать в папке `htpasswd`.
+The required volumes has been already written in the compose file of this repository.
+Following the instructions on the link above, files with logins and passwords must
+be placed in the folder `htpasswd`.
 
-Как пример, чтобы установить Basic Authentication на хост `example.com`, необходимо
-выполнить следующие действия (предполагается, что консоль открыта в папке htpasswd):
+As an example, to set Basic Authentication to host `example.com`, you must perform the
+following actions (assuming that the console is opened in the `htpasswd` folder):
 
 ```sh
 htpasswd -c example.com my-username
-# Далее будет запрошен пароль для пользователя
+# Next, you will be prompted for the password for the user
 ```
 
-Если необходимо добавить ещё одного пользователя, то необходимо выполнить почти
-такую же команду, только без флага `-c`:
+If you need to add one more user, you should execute almost the same command,
+only without the `-c` flag:
 
 ```sh
 htpasswd example.com another-user
-# Далее будет запрошен пароль для нового пользователя
+# Next, you will be prompted for the password for the user
 ```
 
-**Важно**: при создании файла для хоста не происходит автоматической перезагрузки
-конфигурации nginx-proxy, так что после того, как вы создали файл, необходимо
-выполнить перезагрузку контейнера nginx-proxy:
+**Important**: when you create file for the host, the docker-gen does not automatically
+recreate nginx configuration, so after you created the file, you need to restart the nginx container:
 
 ```sh
-docker-compose restart nginx-proxy
+docker-compose restart nginx
 ```
