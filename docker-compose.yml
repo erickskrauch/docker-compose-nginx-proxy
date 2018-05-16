@@ -31,6 +31,8 @@ services:
     image: jrcs/letsencrypt-nginx-proxy-companion:v1.8.1
     container_name: letsencrypt-nginx-proxy-companion
     restart: always
+    environment:
+      NGINX_DOCKER_GEN_CONTAINER: docker-gen
     volumes_from:
       - nginx
     volumes:
