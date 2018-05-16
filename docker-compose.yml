@@ -1,7 +1,7 @@
 version: '2'
 services:
   nginx:
-    image: fholzer/nginx-brotli:v1.13.5
+    image: fholzer/nginx-brotli:v1.14.0
     container_name: nginx
     restart: always
     ports:
@@ -28,7 +28,7 @@ services:
       - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
 
   letsencrypt-nginx-proxy-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion:v1.5
+    image: jrcs/letsencrypt-nginx-proxy-companion:v1.8.1
     container_name: letsencrypt-nginx-proxy-companion
     restart: always
     volumes_from:
