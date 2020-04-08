@@ -35,7 +35,7 @@ docker network create nginx-proxy
 Then you should clone this repository in any convenient place and go to its folder:
 
 ```sh
-git clone git@github.com:erickskrauch/docker-compose-nginx-proxy.git nginx-proxy
+git clone https://github.com/erickskrauch/docker-compose-nginx-proxy.git nginx-proxy
 cd nginx-proxy
 ```
 
