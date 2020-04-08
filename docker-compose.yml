@@ -27,7 +27,7 @@ services:
       - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
 
   letsencrypt-nginx-proxy-companion:
-    image: jrcs/letsencrypt-nginx-proxy-companion:v1.8.1
+    image: jrcs/letsencrypt-nginx-proxy-companion:v1.12.1
     container_name: letsencrypt-nginx-proxy-companion
     restart: always
     environment:
