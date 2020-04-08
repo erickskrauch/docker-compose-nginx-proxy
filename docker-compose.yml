@@ -1,7 +1,7 @@
 version: "3.4"
 services:
   nginx:
-    image: fholzer/nginx-brotli:v1.14.0
+    image: fholzer/nginx-brotli:v1.16.0
     container_name: nginx-proxy
     restart: always
     ports:
@@ -38,6 +38,7 @@ services:
       # Share volumes with nginx
       - certs:/etc/nginx/certs:rw
       - vhost.d:/etc/nginx/vhost.d:rw
+      - conf.d:/etc/nginx/conf.d:rw
       - documents-root:/usr/share/nginx/html:rw
       # Give access to the docker
       - /var/run/docker.sock:/var/run/docker.sock:ro
