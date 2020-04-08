@@ -13,7 +13,6 @@ services:
       - ./dhparam:/etc/nginx/dhparam
       - ./htpasswd:/etc/nginx/htpasswd
       - ./vhost.d:/etc/nginx/vhost.d
-      - /etc/nginx/vhost.d
       - /usr/share/nginx/html
 
   dockergen:
