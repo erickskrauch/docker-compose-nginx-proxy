@@ -8,21 +8,27 @@ services:
       - "80:80"
       - "443:443"
     volumes:
+      # Receive the configuration from containers below
       - conf.d:/etc/nginx/conf.d:ro
       - certs:/etc/nginx/certs:ro
       - vhost.d:/etc/nginx/vhost.d:ro
+      # Custom documents root will be used by LE companion container to perform ACME validation
       - documents-root:/usr/share/nginx/html:ro
+      # Custom environment configuration
       - ./dhparam:/etc/nginx/dhparam # TODO: letsencrypt-nginx-proxy-companion now can generate dhparam on startup
       - ./htpasswd:/etc/nginx/htpasswd
 
   dockergen:
-    image: jwilder/docker-gen:0.7.3
+    image: jwilder/docker-gen:0.7.4
     container_name: dockergen
     restart: always
     command: -notify-sighup=nginx-proxy -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
     volumes:
+      # Share volumes with nginx
       - conf.d:/etc/nginx/conf.d:rw
       - certs:/etc/nginx/certs:ro
+      - vhost.d:/etc/nginx/vhost.d:ro
+      # Since we use 3-containers configuration, the template is necessary
       - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl
       # Give access to the docker
       - /var/run/docker.sock:/tmp/docker.sock:ro
@@ -38,7 +44,6 @@ services:
       # Share volumes with nginx
       - certs:/etc/nginx/certs:rw
       - vhost.d:/etc/nginx/vhost.d:rw
-      - conf.d:/etc/nginx/conf.d:rw
       - documents-root:/usr/share/nginx/html:rw
       # Give access to the docker
       - /var/run/docker.sock:/var/run/docker.sock:ro
