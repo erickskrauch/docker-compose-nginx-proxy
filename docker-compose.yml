@@ -15,7 +15,6 @@ services:
       # Custom documents root will be used by LE companion container to perform ACME validation
       - documents-root:/usr/share/nginx/html:ro
       # Custom environment configuration
-      - ./dhparam:/etc/nginx/dhparam # TODO: letsencrypt-nginx-proxy-companion now can generate dhparam on startup
       - ./htpasswd:/etc/nginx/htpasswd
 
   dockergen:

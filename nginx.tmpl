@@ -1,4 +1,7 @@
 # Copied from https://github.com/nginx-proxy/nginx-proxy/blob/3cbc5417b7ac38037a9ec00fe80e0996d7da3d75/nginx.tmpl
+# It has the following differences from the source file:
+# - common dhparam is not taken from /etc/nginx/dhparam/dhparam.pem, but from /etc/nginx/certs/dhparam.pem.
+#   This change was made to let Let's Encrypt companion container generate custom DH param on installation.
 
 {{ $CurrentContainer := where $ "ID" .Docker.CurrentContainerID | first }}
 
@@ -95,8 +98,8 @@ map $http_upgrade $proxy_connection {
 server_names_hash_bucket_size 128;
 
 # Default dhparam
-{{ if (exists "/etc/nginx/dhparam/dhparam.pem") }}
-ssl_dhparam /etc/nginx/dhparam/dhparam.pem;
+{{ if (exists "/etc/nginx/certs/dhparam.pem") }}
+ssl_dhparam /etc/nginx/certs/dhparam.pem;
 {{ end }}
 
 # Set appropriate X-Forwarded-Ssl header
