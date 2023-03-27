@@ -53,19 +53,19 @@ volumes:
     driver_opts:
       o: bind
       type: none
-      device: $PWD/conf.d
+      device: ./conf.d
   vhost.d:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: $PWD/vhost.d
+      device: ./vhost.d
   certs:
     driver: local
     driver_opts:
       o: bind
       type: none
-      device: $PWD/certs
+      device: ./certs
   documents-root:
     # There is no need to sync this volume with host
 
